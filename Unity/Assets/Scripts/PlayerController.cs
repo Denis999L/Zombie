@@ -14,11 +14,18 @@ public class PlayerController : MonoBehaviour
     public float groundDistance = 0.4f;
     public LayerMask groundMask;
 
+
     Vector3 velocity;
     bool isGrounded;
 
 
-    void Update()
+    void Start()
+    {
+        
+    }
+    
+    
+        public void Update()
     {
         isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
 
@@ -43,4 +50,7 @@ public class PlayerController : MonoBehaviour
 
         controller.Move(velocity * Time.deltaTime);
     }
+
+
+
 }
