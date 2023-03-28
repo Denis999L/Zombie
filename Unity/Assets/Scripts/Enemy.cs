@@ -76,9 +76,8 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    void Die()
+    public void Die()
     {
-        // Perform any necessary death animations or effects
         Destroy(gameObject);
     }
 }

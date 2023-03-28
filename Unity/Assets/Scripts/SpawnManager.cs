@@ -1,29 +1,75 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SpawnManager : MonoBehaviour
 {
-    public GameObject[] enemyPrefabs;
-    private float spawnTime = 5.0f;
-    private float elapsedTime = 0.0f;
-    private int enemyCount = 0;
-    private int maxEnemies = 10;
+    public GameObject[] enemies;
+    public Vector3[] spawnPositions;
+    public int maxEnemies;
+    public float spawnDelay;
 
-    public float spawnRangeX = 6.5f;
-    public float spawnRangeY = 0.1f;
-    public float spawnRangeZ = 4f;
+    private int numEnemiesSpawned = 0;
+    private int numEnemiesDestroyed = 0;
+
+    public Text enemiesRemainingText;
+    public GameObject gameOverCanvas;
+
+    private float spawnTimer = 0f;
+
+    void Start()
+    {
+        UpdateEnemiesRemainingText();
+    }
 
     void Update()
     {
-        elapsedTime += Time.deltaTime;
-        if (elapsedTime >= spawnTime && enemyCount < maxEnemies)
+        if (numEnemiesSpawned < maxEnemies)
         {
-            int randomIndex = Random.Range(0, enemyPrefabs.Length);
-            Vector3 spawnPosition = new Vector3(Random.Range(-spawnRangeX, spawnRangeX), spawnRangeY, Random.Range(-spawnRangeZ, spawnRangeZ));
-            Instantiate(enemyPrefabs[randomIndex], spawnPosition, Quaternion.identity);
-            elapsedTime = 0.0f;
-            enemyCount++;
+            spawnTimer += Time.deltaTime;
+
+            if (spawnTimer >= spawnDelay)
+            {
+                SpawnEnemy();
+                spawnTimer = 0f;
+            }
         }
     }
+
+    void SpawnEnemy()
+    {
+        int randomIndex = Random.Range(0, enemies.Length);
+        int randomPositionIndex = Random.Range(0, spawnPositions.Length);
+        Vector3 spawnPosition = spawnPositions[randomPositionIndex];
+        Instantiate(enemies[randomIndex], spawnPosition, Quaternion.identity);
+        numEnemiesSpawned++;
+        UpdateEnemiesRemainingText();
+    }
+    
+    public void EnemyDestroyed()
+    {
+        numEnemiesDestroyed++;
+        UpdateEnemiesRemainingText();
+    }
+
+
+    void UpdateEnemiesRemainingText()
+    {
+        enemiesRemainingText.text = "Enemies Remaining: " + (maxEnemies - numEnemiesDestroyed);
+
+        if (numEnemiesDestroyed == maxEnemies)
+        {
+            ShowGameOverCanvas();
+        }
+    }
+
+    public void ShowGameOverCanvas()
+    {
+        Debug.Log("Game Over!");
+        gameOverCanvas.SetActive(true);
+        Time.timeScale = 0f;
+    }
+
 }
+
