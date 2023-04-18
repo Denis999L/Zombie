@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
 public class Enemy : MonoBehaviour
 {
     public int damage = 10;
@@ -40,7 +39,7 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
-        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask); 
 
         if (isGrounded && velocity.y < 0)
         {
@@ -51,7 +50,7 @@ public class Enemy : MonoBehaviour
 
         float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
 
-        if (distanceToPlayer <= attackRange)
+        if (distanceToPlayer <= attackRange) // if player is in range, attack
         {
             if (canAttack)
             {
@@ -71,7 +70,7 @@ public class Enemy : MonoBehaviour
         controller.Move(direction.normalized * moveSpeed * Time.deltaTime);
         transform.LookAt(playerTransform);
 
-
+        anim.SetBool("isAttacking", false); //sets animation bool inactive (the enemy is not attacking)
     }
 
     void Attack()
@@ -79,6 +78,7 @@ public class Enemy : MonoBehaviour
         canAttack = false;
         Invoke("ResetAttack", attackDelay);
 
+        anim.SetBool("isAttacking", true); //sets animation bool active (the enemy is attacking)
 
         // Deal damage to the player
         PlayerHealth playerHealth = playerTransform.GetComponent<PlayerHealth>();
