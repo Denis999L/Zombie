@@ -1,75 +1,68 @@
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine;
 
 public class SpawnManager : MonoBehaviour
 {
-    public GameObject[] enemies;
-    public Vector3[] spawnPositions;
-    public int maxEnemies;
-    public float spawnDelay;
-
-    private int numEnemiesSpawned = 0;
-    private int numEnemiesDestroyed = 0;
-
+    public GameObject enemyPrefab;
+    public Transform[] spawnPositions;
+    public int maxEnemies = 10;
+    public float spawnDelay = 1.0f;
     public Text enemiesRemainingText;
-    public GameObject gameOverCanvas;
+    public GameObject gameWinCanvas;
 
-    private float spawnTimer = 0f;
+    private int enemiesRemaining;
 
     void Start()
     {
+        enemiesRemaining = maxEnemies;
+        StartCoroutine(SpawnEnemies());
         UpdateEnemiesRemainingText();
     }
 
-    void Update()
+    IEnumerator SpawnEnemies()
     {
-        if (numEnemiesSpawned < maxEnemies)
-        {
-            spawnTimer += Time.deltaTime;
+        
 
-            if (spawnTimer >= spawnDelay)
+        while (enemiesRemaining > 0)
+        {
+            if (GameObject.FindGameObjectsWithTag("Enemy").Length < maxEnemies)
             {
-                SpawnEnemy();
-                spawnTimer = 0f;
+                Transform spawnPosition = spawnPositions[Random.Range(0, spawnPositions.Length)];
+                GameObject enemy = Instantiate(enemyPrefab, spawnPosition.position, spawnPosition.rotation);
+                enemy.GetComponent<Enemy>().SetSpawnManager(this);
+
+                enemiesRemaining--;
+                UpdateEnemiesRemainingText();
+
+                yield return new WaitForSeconds(spawnDelay);
+            }
+            else
+            {
+                yield return null;
+            }
+        }
+
+        gameWinCanvas.SetActive(true);
+    }
+
+    public void EnemyDestroyed()
+    {
+        if (enemiesRemaining > 0)
+        {
+            enemiesRemaining--;
+            UpdateEnemiesRemainingText(); 
+
+            if (enemiesRemaining <= 0)
+            {
+                gameWinCanvas.SetActive(true);
             }
         }
     }
 
-    void SpawnEnemy()
-    {
-        int randomIndex = Random.Range(0, enemies.Length);
-        int randomPositionIndex = Random.Range(0, spawnPositions.Length);
-        Vector3 spawnPosition = spawnPositions[randomPositionIndex];
-        Instantiate(enemies[randomIndex], spawnPosition, Quaternion.identity);
-        numEnemiesSpawned++;
-        UpdateEnemiesRemainingText();
-    }
-    
-    public void EnemyDestroyed()
-    {
-        numEnemiesDestroyed++;
-        UpdateEnemiesRemainingText();
-    }
-
-
     void UpdateEnemiesRemainingText()
     {
-        enemiesRemainingText.text = "Enemies Remaining: " + (maxEnemies - numEnemiesDestroyed);
-
-        if (numEnemiesDestroyed == maxEnemies)
-        {
-            ShowGameOverCanvas();
-        }
+        enemiesRemainingText.text = "Enemies Remaining: " + enemiesRemaining;
     }
-
-    public void ShowGameOverCanvas()
-    {
-        Debug.Log("Game Over!");
-        gameOverCanvas.SetActive(true);
-        Time.timeScale = 0f;
-    }
-
 }
-

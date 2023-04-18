@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class Enemy : MonoBehaviour
 {
@@ -15,14 +16,37 @@ public class Enemy : MonoBehaviour
     private bool canAttack = true;
     private CharacterController controller;
 
+    public Transform groundCheck;
+    public float groundDistance = 0.4f;
+    public LayerMask groundMask;
+
+    Animator anim;
+
+    Vector3 velocity;
+    bool isGrounded;
+
+    public SpawnManager spawnManager;
+
+
+
     void Start()
     {
         playerTransform = GameObject.FindGameObjectWithTag("Player").transform;
         controller = GetComponent<CharacterController>();
+
+        anim = GetComponent<Animator>();
+
     }
 
     void Update()
     {
+        isGrounded = Physics.CheckSphere(groundCheck.position, groundDistance, groundMask);
+
+        if (isGrounded && velocity.y < 0)
+        {
+            velocity.y = -2f;
+        }
+
         if (playerTransform == null) return;
 
         float distanceToPlayer = Vector3.Distance(transform.position, playerTransform.position);
@@ -41,17 +65,20 @@ public class Enemy : MonoBehaviour
     }
 
     void MoveTowardsPlayer()
-    {
+    {   //Moving
         Vector3 direction = playerTransform.position - transform.position;
         direction.y -= gravity * Time.deltaTime;
         controller.Move(direction.normalized * moveSpeed * Time.deltaTime);
         transform.LookAt(playerTransform);
+
+
     }
 
     void Attack()
     {
         canAttack = false;
         Invoke("ResetAttack", attackDelay);
+
 
         // Deal damage to the player
         PlayerHealth playerHealth = playerTransform.GetComponent<PlayerHealth>();
@@ -79,5 +106,11 @@ public class Enemy : MonoBehaviour
     public void Die()
     {
         Destroy(gameObject);
+    }
+
+
+    public void SetSpawnManager(SpawnManager spawnManager)
+    {
+        this.spawnManager = spawnManager;
     }
 }
